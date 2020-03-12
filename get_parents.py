@@ -3,6 +3,8 @@ import json
 import copy
 import numpy as np
 
+import argparse
+
 class Cell_Node(object):
     """
     A class to store all of the information (children, ancestors, name) related
@@ -131,114 +133,11 @@ def build_tree(dendrogram_in, dendrogram_out):
 
 
 if __name__ == "__main__":
-    fname = 'dendrogram/dend.json'
-    assert os.path.isfile(fname)
-    with open(fname, 'r') as in_file:
-        dendrogram = json.load(in_file)
-
-    tree = {}
-    build_tree(dendrogram, tree)
-
-    for node in tree.values():
-        ct = 0
-        if len(node.children)==0:
-            continue
-        for cc in node.children:
-            ct += tree[cc].ct
-        assert(ct==node.ct)
-
-    max_level = -1
-    for node in tree.values():
-        if node.level > max_level:
-            max_level = node.level
-
-    leaf_list = []
-    for node in tree.values():
-        if len(node.children) == 0:
-            leaf_list.append(node)
-
-    for level in range(max_level-1):
-        out_dir = 'mouse_clusters/level%.3d' % level
-        if not os.path.isdir(out_dir):
-            os.makedirs(out_dir)
-        for node in tree.values():
-            if node.level != level:
-                continue
-            root_node = node
-            out_name = os.path.join(out_dir, '%s.txt' % root_node.name)
-            leaves = []
-            leaf_dexes = []
-            for leaf in leaf_list:
-                if leaf.descended_from(root_node.name) or leaf.name==root_node.name:
-                    ct_file_name = 'mouse_clusters/leaves/%s.txt' % leaf.name
-                    with open(ct_file_name, 'r') as in_file:
-                        census = in_file.readline().strip().split()
-                        dex = int(census[2])
-                        leaves.append(leaf.name)
-                        leaf_dexes.append(dex)
-            with open(out_name, 'w') as out_file:
-                out_file.write('# n_cells %d\n' % node.ct)
-                for n in leaves:
-                    out_file.write('%s ' % n)
-                out_file.write('\n')
-                for d in leaf_dexes:
-                    out_file.write('%d ' % d)
-                out_file.write('\n')
-                for cc in root_node.children:
-                    out_file.write('%s -- %d\n' % (cc, tree[cc].ct))
-            print('got %d -- %s' % (node.ct, out_name))
-
-    out_dir = 'mouse_clusters/level999'
-    if not os.path.isdir(out_dir):
-        os.makedirs(out_dir)
-    for leaf in leaf_list:
-        out_name = os.path.join(out_dir,'%s.txt' % leaf.name)
-        with open(out_name, 'w') as out_file:
-            out_file.write('# n_cells %d\n' % leaf.ct)
-            out_file.write('%s\n' % leaf.name)
-
-    #### list example pairs ####
-    parity = []
-    two_to_one = []
-    worse = []
-    for node in tree.values():
-        if len(node.children) == 0:
-            continue
-        child_list = node.children
-        n_children = len(child_list)
-        #print(node.name,n_children)
-        for ic1, _c1 in enumerate(child_list):
-            c1 = tree[_c1]
-            n1 = np.log10(c1.ct)
-            f1 = 'level%.3d/%s' % (c1.level, c1.name)
-            for _c2 in child_list[ic1+1:]:
-                c2 = tree[_c2]
-                n2 = np.log10(c2.ct)
-                f2 = 'level%.3d/%s' % (c2.level, c2.name)
-                out_tuple = (f1, f2, c1.ct, c2.ct,
-                             len(c1.children), len(c2.children))
-                if np.abs(n1-n2)<0.2:
-                    parity.append(out_tuple)
-                elif np.abs(n1-n2)<0.6:
-                    two_to_one.append(out_tuple)
-                else:
-                    worse.append(out_tuple)
-
-    print('parity %d' % len(parity))
-    print('two to one %d' % len(two_to_one))
-    print('worse %d' % len(worse))
-    #print(parity)
-    print(len(tree))
-
-    out_dir = 'mouse_clusters/examples'
-    if not os.path.isdir(out_dir):
-        os.makedirs(out_dir)
-    name_list = ['parity.txt', 'two_to_one.txt', 'worse.txt']
-    for name, data in zip(name_list, [parity, two_to_one, worse]):
-        with open(os.path.join(out_dir, name), 'w') as out_file:
-            out_file.write("# name_1 name_2 ct_1 ct_2 children_1 children_2\n")
-            for pair in data:
-                out_file.write('%s %s %d %d %d %d\n' %
-                               (pair[0], pair[1],
-                                pair[2], pair[3],
-                                pair[4], pair[5]))
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dend_name', type=str, default=None,
+                        help='path to dend.json file')
+    args = parser.parse_args()
+    with open(args.dend_name, 'r') as in_file:
+        raw_dendrogram = json.load(in_file)
+    parsed_dendrogram = {}
+    build_tree(raw_dendrogram, parsed_dendrogram)
