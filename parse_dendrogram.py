@@ -7,8 +7,20 @@ import argparse
 
 class CellNode(object):
     """
-    A class to store all of the information (children, ancestors, name) related
-    to a node on the dendrogram
+    A class to store all of the information (children, ultimate_children,
+    ancestors, name, level) related to a node on the dendrogram
+
+    name -- a string taken from the 'cell_set_accession' in the raw dendrogram
+
+    level -- an int; level=0 is the common ancestor of the tree; all other levels
+    are higher
+
+    ancestors -- lists all of the ancestors of the current node
+
+    children -- all of the *immediate* children of the current node
+
+t    ultimate_children -- *all* nodes descended from the current node (whether they
+    are leaves or not)
     """
 
     def __init__(self, name, ancestors, level):
