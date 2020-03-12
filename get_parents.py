@@ -23,7 +23,6 @@ class Cell_Node(object):
             self._ancestor_set = set(ancestors)
         self._level = level
         self._list_of_children = []
-        self._ct = 0
 
     @property
     def name(self):
@@ -66,13 +65,6 @@ class Cell_Node(object):
         A list of the cell_set_accessions of all nodes descended from this tree
         """
         return copy.deepcopy(self._list_of_children)
-
-    @property
-    def ct(self):
-        return self._ct
-
-    def add_ct(self, ii):
-        self._ct += ii
 
 
 def _build_tree(node_in, dendrogram_out, ancestors_in=None, level=0):
