@@ -4,6 +4,10 @@ import copy
 import numpy as np
 
 class Cell_Node(object):
+    """
+    A class to store all of the information (children, ancestors, name) related
+    to a node on the dendrogram
+    """
 
     def __init__(self, name, ancestors, level):
         """
