@@ -126,7 +126,7 @@ def build_tree(dendrogram_in, dendrogram_out):
     above. Each CellNode has a list children and a list ancestors containing
     the cell_set_accession of the children and ancestors of that node
     """
-    _build_tree(node_in, dendrogram_out,
+    _build_tree(dendrogram_in, dendrogram_out,
                 ancestors_in=None, level=0)
 
 
