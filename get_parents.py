@@ -10,7 +10,9 @@ class Cell_Node(object):
         Parameters
         ----------
         name -- the name of the current node
+
         ancestors -- a list of the names of the ancestors of this node
+
         level -- the level (0=the common ancestor of the whole tree) of this node
         """
         self._name = name
@@ -25,14 +27,24 @@ class Cell_Node(object):
 
     @property
     def name(self):
+        """
+        The cell_set_accession of this node
+        """
         return self._name
 
     @property
     def ancestors(self):
+        """
+        A list of the cell_set_accessions of the ancestors of this node
+        """
         return copy.deepcopy(self._ancestors)
 
     @property
     def level(self):
+        """
+        The level of this node in the tree (level=0 is the common ancestor
+        of the whole tree)
+        """
         return self._level
 
     def descended_from(self, name):
@@ -50,6 +62,9 @@ class Cell_Node(object):
 
     @property
     def children(self):
+        """
+        A list of the cell_set_accessions of all nodes descended from this tree
+        """
         return copy.deepcopy(self._list_of_children)
 
     @property
@@ -61,6 +76,20 @@ class Cell_Node(object):
 
 
 def _build_tree(node_in, dendrogram_out, ancestors_in=None, level=0):
+    """
+    Add a node to the dendrogram
+
+    node_in -- the node to be added to the tree, as realized in the original
+    dict stored in dend.json
+
+    dendgrogram_out -- the dict in which the tree is being constructed
+
+    ancestors_in -- a list of the names of ancestors of this node (None if
+    there are no ancestors)
+
+    level -- the level of this node in the tree (level=0 means the common
+    ancestor of the tree)
+    """
     is_leaf = False
     if 'leaf_attributes' in node_in.keys():
         attr_key = 'leaf_attributes'
