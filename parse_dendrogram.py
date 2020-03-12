@@ -19,7 +19,7 @@ class CellNode(object):
 
     children -- all of the *immediate* children of the current node
 
-t    ultimate_children -- *all* nodes descended from the current node (whether they
+    ultimate_children -- *all* nodes descended from the current node (whether they
     are leaves or not)
     """
 
