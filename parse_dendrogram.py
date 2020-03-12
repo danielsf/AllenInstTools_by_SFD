@@ -61,21 +61,44 @@ class Cell_Node(object):
 
     def add_child(self, child):
         """
-        Add a node's name to the list of this node's children
+        Add a node's name to the list of this node's immediate children
         """
         self._list_of_children.append(child)
 
     @property
     def children(self):
         """
-        A list of the cell_set_accessions of all nodes descended from this tree
+        A list of the cell_set_accessions the nodes immediately descended
+        from this node
         """
         return copy.deepcopy(self._list_of_children)
+
+    def _create_ultimate_children(self):
+        """
+        populate a list _ultimate_children which includes *all* nodes descended
+        from this node
+        """
+        self._ultimate_children = copy.deepcopy(self._list_of_children)
+
+    def add_ultimate_child(self, name):
+        """
+        Add a name to the list of this node's _ultimate_children
+        """
+        self._ultimate_children.append(name)
+
+    @property
+    def ultimate_children(self):
+        """
+        A list of the names of *all* the nodes descended from this node
+        """
+        return copy.deepcopy(self._ultimate_children)
 
 
 def _build_tree(node_in, dendrogram_out, ancestors_in=None, level=0):
     """
-    Add a node to the dendrogram
+    Add a node to the dendrogram. Note: this method is recursive; running
+    it on a node in the tree will result in dendrogram_out being populated
+    with nodes for every childe of node_in.
 
     node_in -- the node to be added to the tree, as realized in the original
     dict stored in dend.json
@@ -131,6 +154,27 @@ def build_tree(dendrogram_in, dendrogram_out):
     _build_tree(dendrogram_in, dendrogram_out,
                 ancestors_in=None, level=0)
 
+    # at this point, each node's 'children' list contains its immediate
+    # children, not necessarily every node that it descends to.
+
+    ult_child_lookup = {}
+    for node_name in dendrogram_out:
+        dendrogram_out[node_name]._create_ultimate_children()
+        ult_child_lookup[node_name] = set(dendrogram_out[node_name].ultimate_children)
+
+    # append *all* children to the tree's list of ultimate_children
+    for node_name in dendrogram_out:
+        ancestors = dendrogram_out[node_name].ancestors
+        if ancestors is None:
+            continue
+        for a_name in ancestors:
+            if node_name not in ult_child_lookup[a_name]:
+                dendrogram_out[a_name].add_ultimate_child(node_name)
+
+    for node_name in dendrogram_out:
+        c = dendrogram_out[node_name].ultimate_children
+        assert len(c) == len(np.unique(c))
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -141,3 +185,11 @@ if __name__ == "__main__":
         raw_dendrogram = json.load(in_file)
     parsed_dendrogram = {}
     build_tree(raw_dendrogram, parsed_dendrogram)
+
+    first_parent = raw_dendrogram['node_attributes'][0]['cell_set_accession']
+    for k in parsed_dendrogram.keys():
+        if k != first_parent:
+            assert first_parent in parsed_dendrogram[k].ancestors
+
+    n_nodes = len(parsed_dendrogram)
+    assert len(parsed_dendrogram[first_parent].ultimate_children) == (n_nodes-1)
