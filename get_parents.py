@@ -6,6 +6,13 @@ import numpy as np
 class Cell_Node(object):
 
     def __init__(self, name, ancestors, level):
+        """
+        Parameters
+        ----------
+        name -- the name of the current node
+        ancestors -- a list of the names of the ancestors of this node
+        level -- the level (0=the common ancestor of the whole tree) of this node
+        """
         self._name = name
         self._ancestors = copy.deepcopy(ancestors)
         if ancestors is None:
@@ -29,9 +36,16 @@ class Cell_Node(object):
         return self._level
 
     def descended_from(self, name):
+        """
+        Return a boolean answering the question "is this node descended
+        from the node specified by 'name'?"
+        """
         return name in self._ancestor_set
 
     def add_child(self, child):
+        """
+        Add a node's name to the list of this node's children
+        """
         self._list_of_children.append(child)
 
     @property
