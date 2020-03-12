@@ -5,7 +5,7 @@ import numpy as np
 
 import argparse
 
-class Cell_Node(object):
+class CellNode(object):
     """
     A class to store all of the information (children, ancestors, name) related
     to a node on the dendrogram
@@ -118,7 +118,7 @@ def _build_tree(node_in, dendrogram_out, ancestors_in=None, level=0):
     else:
         attr_key = 'node_attributes'
     name = node_in[attr_key][0]['cell_set_accession']
-    tree_node = Cell_Node(name, ancestors_in, level)
+    tree_node = CellNode(name, ancestors_in, level)
 
     dendrogram_out[name] = tree_node
     level += 1
