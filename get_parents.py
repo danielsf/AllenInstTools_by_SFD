@@ -86,22 +86,23 @@ def _build_tree(node_in, dendrogram_out, ancestors_in=None, level=0):
             _build_tree(child, dendrogram_out,
                         ancestors_in=ancestors, level=level)
 
-def build_tree(node_in, dendrogram_out):
+def build_tree(dendrogram_in, dendrogram_out):
+    """
+    dendrogram_in is the dict that results from running
 
+        import json
+        with open('dend.json','r') as in_file:
+            dendrogram_in = json.load(in_file)
+
+    dendrogram_out is an empty dict into which the new tree will be written
+
+    dendrogram_out is a dict whose keys are the cell_set_accession names of the
+    nodes in dend.json. It's values are instances of the class CellNode defined
+    above. Each CellNode has a list children and a list ancestors containing
+    the cell_set_accession of the children and ancestors of that node
+    """
     _build_tree(node_in, dendrogram_out,
                 ancestors_in=None, level=0)
-
-    for leaf in tree.values():
-        if len(leaf.children)>0:
-            continue
-
-        ct_file_name = 'mouse_clusters/leaves/%s.txt' % leaf.name
-        with open(ct_file_name, 'r') as in_file:
-            census = in_file.readline().strip().split()
-            local_ct = int(census[-1])
-            leaf.add_ct(local_ct)
-            for a_name in leaf.ancestors:
-                tree[a_name].add_ct(local_ct)
 
 
 if __name__ == "__main__":
